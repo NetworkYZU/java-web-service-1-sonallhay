@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 public class LoginsServlet extends HttpServlet {
     static{
         try {
-            //加入 Class.forName
             Class.forName("org.apache.derby.jdbc.ClientDriver");
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(LoginsServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -38,13 +37,22 @@ public class LoginsServlet extends HttpServlet {
     private void service1(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
         response.setContentType("text/plain;charset=UTF-8");
         try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
-            Statement stmt=conn.createStatement();
-            ResultSet rs=stmt.executeQuery("select * from login");
-            while(rs.next()){
-                String id=rs.getString("id");
-                String password=rs.getString("password");
-                out.println(id+":"+password);
-            }
+            //select from login
+            //output in id:password style
+            
+            //////////////////////////////
+        }catch(Exception e){
+            throw new ServletException(e);
+        }
+    }
+    
+    private void service2(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
+        response.setContentType("application/json;charset=UTF-8");
+        try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
+            //re-implement service1, this time
+            //responde in json format
+            
+            //////////////////////////////
         }catch(Exception e){
             throw new ServletException(e);
         }
