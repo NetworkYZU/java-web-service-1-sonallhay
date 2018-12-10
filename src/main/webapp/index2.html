@@ -11,13 +11,94 @@
         <link href="https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
         <script>
             var model = null;
-           
+            var dlgModel = null;
+            $(document).ready(function () {
+                dlgModel = new Vue({
+                    el: "#dlg",
+                    data: {
+                        id: "",
+                        password: ""
+                    }
+                });
+                $.ajax("logins", {
+                    success: function (data) {
+                        model = new Vue({
+                            el: "#app",
+                            data: {
+                                logins: data
+                            },
+                            methods: {
+                                deleteLogins: function (i) {
+                                        $.ajax("login_info?id="+model.logins[i].id, {
+                                        type: "DELETE",
+                                        success: function(d){
+                                            model.logins.splice(i, 1);
+                                        }
+                                    });
+                                },
+                                editLogins: function (o) {
+                                    dlgModel.id = o.id;
+                                    dlgModel.password = o.password;
+                                    $("#dlg").dialog({
+                                        modal: true,
+                                        buttons: [
+                                            {
+                                                text: "OK",
+                                                click: function () {
+                                                    $.ajax("login_info?id="+dlgModel.id+"&password="+dlgModel.password, {
+                                                        type: "PUT", 
+                                                        success: function(d){
+                                                            o.id = dlgModel.id;
+                                                            o.password = dlgModel.password;
+                                                        }
+                                                    });
+                                                    $(this).dialog("close");
+                                                }
+                                            }
+                                        ]
+                                    });
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+            function addLogin() {
+                dlgModel.id = "";
+                dlgModel.password = "";
+                $("#dlg").dialog({
+                    modal: true,
+                    buttons: [
+                        {
+                            text: "OK",
+                            click: function () {
+                                $.ajax("login_info", {
+                                    type: "POST",
+                                    data: {
+                                        id: dlgModel.id,
+                                        password: dlgModel.password
+                                    },
+                                    success: function(d) {
+                                        model.logins.push({
+                                            id: dlgModel.id,
+                                            password: dlgModel.password
+                                      });
+                                    }    
+                                });
+                                $(this).dialog("close");
+                            }
+                        }
+                    ]
+                });
+            }
         </script>
     </head>
     <body>
+        <button onclick="addLogin();">New</button>
         <table border="1" id="app">
             <thead>
                 <tr>
+                    <th>INDEX</th>
                     <th>ID</th>
                     <th>PASSWORD</th>
                     <th></th>
@@ -25,13 +106,19 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="login in logins">
+                <tr v-for="(login, index) in logins">
+                    <td>{{index}}</td>
                     <td>{{login.id}}</td>
                     <td>{{login.password}}</td>
-                    <td></td>
-                    <td></td>
+                    <td><button v-on:click="editLogins(login);">EDIT</button></td>
+                    <td><button v-on:click="deleteLogins(index);">DELETE</button></td>
                 </tr>
             </tbody>
         </table>
+        <div id="dlg" style="display:none;">
+            ID: <input type="text" v-model="id"><br>
+            PASSWORD: <input type="password" v-model="password">
+
+        </div>
     </body>
 </html>
