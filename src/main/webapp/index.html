@@ -3,8 +3,41 @@
     <head>
         <title>Start Page</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <link href="https://code.jquery.com/ui/1.12.1/themes/ui-lightness/jquery-ui.css" rel="stylesheet" type="text/css" />
+        <script>
+            var model = null;
+            $(document).ready(function () {
+                model = new Vue({
+                    "el": "#dlg",
+                    "data": {
+                        "login": {}
+                    }
+                });
+            });
+            function query() {
+                $.ajax("login_info", {
+                    "data": {
+                        "id": $("#qid").val()
+                    },
+                    "success": function (d) {
+                        console.log(d);
+                        model.login = d;
+                    }
+                });
+            }
+        </script>
     </head>
     <body>
-        <h1>Hello World!</h1>
+        ID: <input type="text" id="qid"/>
+        <input type="button" value="query" onclick="query()"/>
+        <div id="dlg">
+            id : <input type="text" v-model="login.id"/><br/>
+            password : <input type="text"  v-model="login.password"/>
+        </div>
     </body>
 </html>
