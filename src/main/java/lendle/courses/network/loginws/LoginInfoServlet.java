@@ -5,10 +5,15 @@
  */
 package lendle.courses.network.loginws;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -32,13 +37,24 @@ public class LoginInfoServlet extends HttpServlet {
     }
     
     private void getImpl1(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException{
-        response.setContentType("text/plain;charset=UTF-8");
+        response.setContentType("application"
+                + "/json;charset=UTF-8");
         try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
             //select from login
             //output in id:password style
             //this time, consider the id parameter
             String id=request.getParameter("id");
-            
+            PreparedStatement pstmt=conn.prepareStatement("SELECT * FROM Login where id=?");
+            pstmt.setString(1, id);
+            ResultSet rs=pstmt.executeQuery();
+            if(rs.next()) {
+                Map map=new HashMap();
+                map.put("id", rs.getString("ID"));
+                map.put("password", rs.getString("PASSWORD"));
+                out.print(new Gson().toJson(map));
+            }else{
+                response.setStatus(203);
+            }
             //////////////////////////////
         }catch(Exception e){
             throw new ServletException(e);
@@ -81,6 +97,10 @@ public class LoginInfoServlet extends HttpServlet {
             //update the corresponding user
             String id=request.getParameter("id");
             String password=request.getParameter("password");
+            PreparedStatement pstmt=conn.prepareStatement("update Login set PASSWORD=? where ID=?");
+            pstmt.setString(1, password);
+            pstmt.setString(2, id);
+            pstmt.executeUpdate();
             //////////////////////////////
             out.println("success");
         }catch(Exception e){
@@ -94,6 +114,9 @@ public class LoginInfoServlet extends HttpServlet {
         try (PrintWriter out=response.getWriter(); Connection conn=DriverManager.getConnection("jdbc:derby://localhost:1527/sample", "app", "app")) {
             //delete the corresponding user
             String id=request.getParameter("id");
+            PreparedStatement pstmt=conn.prepareStatement("delete from Login where id=?");
+            pstmt.setString(1, id);
+            pstmt.executeUpdate();
             //////////////////////////////
             out.println("success");
         }catch(Exception e){
@@ -108,6 +131,10 @@ public class LoginInfoServlet extends HttpServlet {
             //insert the corresponding user
             String id=request.getParameter("id");
             String password=request.getParameter("password");
+            PreparedStatement pstmt=conn.prepareStatement("insert into Login(ID, PASSWORD) values (?, ?)");
+            pstmt.setString(1, id);
+            pstmt.setString(2, password);
+            pstmt.executeUpdate();
             //////////////////////////////
             out.println("success");
         }catch(Exception e){
